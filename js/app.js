@@ -17,7 +17,8 @@ const pResultEl = document.getElementById('p-result');
 const cResultEl = document.getElementById('c-result');
 
 /*----- event listeners -----*/
-
+document.querySelector('main')
+    .addEventListener('click', handleChoice);
 
 /*----- functions -----*/
 init();
@@ -37,6 +38,28 @@ function init() {
     render();
 }
 
+// In response to user interaction (player makes a move), we update all impacted state, then finally, call render()
+function handleChoice(evt) {
+    // Guards (do nothing unless one of the three buttons were clicked)
+    if (evt.target.tagName !== 'BUTTON') return;
+    // Player has made a choice
+    results.p = evt.target.innerText.toLowerCase();
+    // Compute a random choice for the computer
+    results.c = getRandomRPS();
+    winner = getWinner();
+    render();
+}
+
+function getWinner() {
+    
+}
+
+function getRandomRPS() {
+    const rps = Object.keys(RPS_LOOKUP);
+    const rndIdx = Math.floor(Math.random() * rps.length);
+    return rps[rndIdx];
+}
+
 function renderScores() {
     for (let key in scores) {
         const scoreEl = document.getElementById(`${key}-score`);
@@ -49,6 +72,7 @@ function renderResults() {
     cResultEl.src = RPS_LOOKUP[results.c];
 }
 
+// Transfer/visualize all state to the DOM
 function render() {
     renderScores();
     renderResults();  
