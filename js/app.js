@@ -1,9 +1,9 @@
 /*----- constants -----*/
 const AUDIO = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-simple-countdown-922.mp3');
 const RPS_LOOKUP = {
-    r: 'imgs/rock.png',
-    p: 'imgs/paper.png',
-    s: 'imgs/scissors.png'
+    r: {img: 'imgs/rock.png', beats: 's'},
+    p: {img: 'imgs/paper.png', beats: 'r'},
+    s: {img: 'imgs/scissors.png', beats: 'p'}
 };
 
 /*----- app's state (variables) -----*/
@@ -15,6 +15,7 @@ let winner; // String 'p' if player wins, 't' for tie, 'c' if computer wins
 /*----- cached element references -----*/
 const pResultEl = document.getElementById('p-result');
 const cResultEl = document.getElementById('c-result');
+const countdownEl = document.getElementById('countdown');
 
 /*----- event listeners -----*/
 document.querySelector('main')
@@ -47,11 +48,13 @@ function handleChoice(evt) {
     // Compute a random choice for the computer
     results.c = getRandomRPS();
     winner = getWinner();
+    scores[winner] += 1; 
     render();
 }
 
 function getWinner() {
-    
+    if (results.p === results.c) return 't';
+    return RPS_LOOKUP[results.p].beats === results.c ? 'p' : 'c'; 
 }
 
 function getRandomRPS() {
@@ -68,12 +71,34 @@ function renderScores() {
 }
 
 function renderResults() {
-    pResultEl.src = RPS_LOOKUP[results.p];
-    cResultEl.src = RPS_LOOKUP[results.c];
+    pResultEl.src = RPS_LOOKUP[results.p].img;
+    cResultEl.src = RPS_LOOKUP[results.c].img;
+    pResultEl.style.borderColor = winner === 'p' ? 'grey' : 'white';
+    cResultEl.style.borderColor = winner === 'c' ? 'grey' : 'white';
 }
 
 // Transfer/visualize all state to the DOM
 function render() {
-    renderScores();
-    renderResults();  
+    renderCountdown(function() {
+        renderScores();
+        renderResults();  
+    });
+}
+
+function renderCountdown(cb) {
+    let count = 3;
+    AUDIO.currentTime = 0;
+    AUDIO.play();
+    countdownEl.style.visibility = 'visible';
+    countdownEl.innerText = count;
+    const timerId = setInterval(function() {
+        count --;
+        if (count) {
+            countdownEl.innerText = count;
+        } else {
+            clearInterval(timerId);
+            countdownEl.style.visibility = 'hidden';
+            cb();
+        };
+    }, 1000);
 }
